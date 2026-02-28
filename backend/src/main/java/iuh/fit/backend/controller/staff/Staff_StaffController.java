@@ -22,5 +22,5 @@ public class Staff_StaffController {
         APIResponse<?> response = staffService.getStaffInfoById(staffId);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
-    
+
 }

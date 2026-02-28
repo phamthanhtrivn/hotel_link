@@ -6,7 +6,7 @@ import { User, Phone, Mail, Award, Info, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { AuthContext } from "@/context/AuthContext";
 import { customerService } from "@/services/customerService";
-import { Label } from "@/components/ui/Label";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import PointsPolicyModal from "@/components/common/customer/PointsPolicyModal";
 

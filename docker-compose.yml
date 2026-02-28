@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: hotellink-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: hotellink
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MARIADB_USER: ${DB_USERNAME:-hotellink_user}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-hotellink_pass}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./backend/scripts/data.sql:/docker-entrypoint-initdb.d/data.sql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mariadb -u root -p$${MARIADB_ROOT_PASSWORD} -e 'SELECT 1'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - hotellink-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: hotellink-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mariadb
+      DB_USERNAME: ${DB_USERNAME:-hotellink_user}
+      DB_PASSWORD: ${DB_PASSWORD:-hotellink_pass}
+      HIBERNATE_DDL: none
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:8080}
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE}
+      VNPAY_PAYMENT_URL: ${VNPAY_PAYMENT_URL}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET}
+      VNPAY_VERSION: ${VNPAY_VERSION}
+      VNPAY_COMMAND: ${VNPAY_COMMAND}
+      VNPAY_ORDER_TYPE: ${VNPAY_ORDER_TYPE}
+      MOMO_PARTNER_CODE: ${MOMO_PARTNER_CODE}
+      MOMO_ACCESS_KEY: ${MOMO_ACCESS_KEY}
+      MOMO_SECRET_KEY: ${MOMO_SECRET_KEY}
+      MOMO_END_POINT: ${MOMO_END_POINT}
+      MOMO_REQUEST_TYPE: ${MOMO_REQUEST_TYPE}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "8080:8080"
+    networks:
+      - hotellink-network
+git   frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BASE_API_URL: http://localhost:8080
+    container_name: hotellink-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - hotellink-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  hotellink-network:
+    driver: bridge
