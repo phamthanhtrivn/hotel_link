@@ -14,11 +14,7 @@ services:
       - mariadb_data:/var/lib/mysql
       - ./backend/scripts/data.sql:/docker-entrypoint-initdb.d/data.sql
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "mariadb -u root -p$${MARIADB_ROOT_PASSWORD} -e 'SELECT 1'",
-        ]
+      test: [ "CMD-SHELL", "mariadb -u root -p$${MARIADB_ROOT_PASSWORD} -e 'SELECT 1'" ]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -60,7 +56,7 @@ services:
       mariadb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -68,7 +64,7 @@ services:
       - "8080:8080"
     networks:
       - hotellink-network
-git   frontend:
+  frontend:
     build:
       context: ./frontend
       args:
@@ -85,6 +81,7 @@ git   frontend:
 
 volumes:
   mariadb_data:
+
 
 networks:
   hotellink-network:
