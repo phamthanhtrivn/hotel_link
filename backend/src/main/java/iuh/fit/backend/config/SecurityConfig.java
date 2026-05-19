@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .authorizeHttpRequests(auth -> auth
                         // public
@@ -47,7 +47,8 @@ public class SecurityConfig {
                                 "/api/public/**",
                                 "/api/auth/**",
                                 "/api/payments/**",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/hotelbooking/oauth2/**"
                         ).permitAll()
 
                         // member
@@ -69,7 +70,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/oauth2/authorization/google")
                         .redirectionEndpoint(redir -> redir
-                                .baseUri("/hotellink/oauth2/callback/google")
+                                .baseUri("/hotelbooking/oauth2/callback/*")
                         )
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)

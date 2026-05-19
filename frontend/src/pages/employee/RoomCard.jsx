@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ROOM_STATUS_OPTIONS } from "@/constants/RoomConstants";
+import { ROOM_STATUS_OPTIONS } from "@/constants/roomConstants";
 import { PlusCircle } from "lucide-react";
 import React from "react";
 

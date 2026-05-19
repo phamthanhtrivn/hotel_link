@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FLOOR_OPTIONS, ROOM_STATUS, ROOM_TYPE_OPTIONS } from "@/constants/RoomConstants";
+import { FLOOR_OPTIONS, ROOM_STATUS, ROOM_TYPE_OPTIONS } from "@/constants/roomConstants";
 import { STATUS_OPTIONS } from "@/constants/StatusConstants";
 import { formatDateTimeForCustomer } from "@/helpers/dateHelpers";
 import { roomService } from "@/services/roomService";

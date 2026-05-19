@@ -9,7 +9,7 @@ import { roomTypeService } from "@/services/roomTypeService";
 import { Card, CardContent } from "@/components/ui/card";
 import RoomTypeHeader from "@/components/common/employee/RoomTypeHeader";
 import RoomCard from "./RoomCard";
-import { roomStatusMeta } from "@/constants/RoomConstants";
+import { roomStatusMeta } from "@/constants/roomConstants";
 import { roomService } from "@/services/roomService";
 import {
   getDefaultCheckInDate,
