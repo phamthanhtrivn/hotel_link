@@ -70,7 +70,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_BASE_API_URL: http://localhost:8080
+        VITE_BASE_API_URL: ${BACKEND_URL}
     container_name: hotellink-frontend
     restart: unless-stopped
     ports:
