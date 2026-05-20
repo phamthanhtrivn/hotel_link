@@ -33,8 +33,8 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotellink-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotellink-backend:${{ github.sha }}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
@@ -44,8 +44,8 @@ jobs:
           build-args: |
             VITE_BASE_API_URL=${{ secrets.BACKEND_URL }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-frontend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotellink-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotellink-frontend:${{ github.sha }}
 
       - name: Upload deploy files to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -54,7 +54,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.prod.yml,backend/scripts/data.sql"
-          target: "/tmp/hotel-link-deploy"
+          target: "/tmp/hotellink-deploy"
           overwrite: true
 
       - name: Deploy on EC2
@@ -66,11 +66,11 @@ jobs:
           script: |
             set -e
 
-            sudo mkdir -p /opt/hotel-link/backend/scripts
-            sudo cp /tmp/hotel-link-deploy/docker-compose.prod.yml /opt/hotel-link/docker-compose.prod.yml
-            sudo cp /tmp/hotel-link-deploy/backend/scripts/data.sql /opt/hotel-link/backend/scripts/data.sql
+            sudo mkdir -p /opt/hotellink/backend/scripts
+            sudo cp /tmp/hotellink-deploy/docker-compose.prod.yml /opt/hotellink/docker-compose.prod.yml
+            sudo cp /tmp/hotellink-deploy/backend/scripts/data.sql /opt/hotellink/backend/scripts/data.sql
 
-            sudo tee /opt/hotel-link/.env > /dev/null <<'ENVEOF'
+            sudo tee /opt/hotellink/.env > /dev/null <<'ENVEOF'
             DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             IMAGE_TAG=${{ github.sha }}
 
@@ -109,8 +109,8 @@ jobs:
             CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
             ENVEOF
 
-            sudo chmod 600 /opt/hotel-link/.env
-            cd /opt/hotel-link
+            sudo chmod 600 /opt/hotellink/.env
+            cd /opt/hotellink
             sudo docker compose -f docker-compose.prod.yml pull
             sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
             sudo docker image prune -f
