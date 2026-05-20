@@ -21,7 +21,7 @@ services:
       - hotellink-network
 
   backend:
-    image: ${DOCKERHUB_USERNAME}/hotel-link-backend:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_USERNAME}/hotellink-backend:${IMAGE_TAG:-latest}
     container_name: hotellink-backend
     restart: unless-stopped
     environment:
@@ -66,7 +66,7 @@ services:
       - hotellink-network
 
   frontend:
-    image: ${DOCKERHUB_USERNAME}/hotel-link-frontend:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_USERNAME}/hotellink-frontend:${IMAGE_TAG:-latest}
     container_name: hotellink-frontend
     restart: unless-stopped
     ports:
