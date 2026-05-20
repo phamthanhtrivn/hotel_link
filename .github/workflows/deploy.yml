@@ -1,0 +1,116 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-backend:${{ github.sha }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            VITE_BASE_API_URL=${{ secrets.BACKEND_URL }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-link-frontend:${{ github.sha }}
+
+      - name: Upload deploy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,backend/scripts/data.sql"
+          target: "/tmp/hotel-link-deploy"
+          overwrite: true
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            sudo mkdir -p /opt/hotel-link/backend/scripts
+            sudo cp /tmp/hotel-link-deploy/docker-compose.prod.yml /opt/hotel-link/docker-compose.prod.yml
+            sudo cp /tmp/hotel-link-deploy/backend/scripts/data.sql /opt/hotel-link/backend/scripts/data.sql
+
+            sudo tee /opt/hotel-link/.env > /dev/null <<'ENVEOF'
+            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            IMAGE_TAG=${{ github.sha }}
+
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            BACKEND_URL=${{ secrets.BACKEND_URL }}
+
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            EMAIL_APP_PASSWORD=${{ secrets.EMAIL_APP_PASSWORD }}
+
+            VNPAY_PAYMENT_URL=${{ secrets.VNPAY_PAYMENT_URL }}
+            VNPAY_TMN_CODE=${{ secrets.VNPAY_TMN_CODE }}
+            VNPAY_HASH_SECRET=${{ secrets.VNPAY_HASH_SECRET }}
+            VNPAY_VERSION=${{ secrets.VNPAY_VERSION }}
+            VNPAY_COMMAND=${{ secrets.VNPAY_COMMAND }}
+            VNPAY_ORDER_TYPE=${{ secrets.VNPAY_ORDER_TYPE }}
+
+            MOMO_PARTNER_CODE=${{ secrets.MOMO_PARTNER_CODE }}
+            MOMO_ACCESS_KEY=${{ secrets.MOMO_ACCESS_KEY }}
+            MOMO_SECRET_KEY=${{ secrets.MOMO_SECRET_KEY }}
+            MOMO_END_POINT=${{ secrets.MOMO_END_POINT }}
+            MOMO_REQUEST_TYPE=${{ secrets.MOMO_REQUEST_TYPE }}
+
+            CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+            CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+            CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+            ENVEOF
+
+            sudo chmod 600 /opt/hotel-link/.env
+            cd /opt/hotel-link
+            sudo docker compose -f docker-compose.prod.yml pull
+            sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            sudo docker image prune -f

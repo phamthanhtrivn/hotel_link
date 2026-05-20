@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
 
-        if (path.startsWith("/api/public/") || path.startsWith("/oauth2/") || path.startsWith("/hotelbooking/oauth2/") || path.startsWith("/api/auth/")) {
+        if (path.startsWith("/api/public/") || path.startsWith("/oauth2/") || path.startsWith("/hotelbooking/oauth2/") || path.startsWith("/api/auth/") || path.equals("/actuator/health")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -89,6 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         return path.startsWith("/api/public/") ||
                path.startsWith("/api/auth/") ||
+               path.equals("/actuator/health") ||
                path.startsWith("/oauth2/") ||
                path.startsWith("/hotelbooking/oauth2/");
     }

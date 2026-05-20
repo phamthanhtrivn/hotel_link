@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/api/public/**",
                                 "/api/auth/**",
                                 "/api/payments/**",
+                                "/actuator/health",
                                 "/oauth2/**",
                                 "/hotelbooking/oauth2/**"
                         ).permitAll()
