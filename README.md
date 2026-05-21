@@ -158,33 +158,9 @@ HotelLink không chỉ là một bài demo CRUD đơn giản. Dự án được 
 
 ## 🏗️ Kiến trúc tổng quan
 
-```text
-┌──────────────────────┐
-│        User          │
-│ Customer / Staff /   │
-│ Admin                │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│   Frontend React     │
-│ Vite + Redux + UI    │
-└──────────┬───────────┘
-           │ REST API
-           ▼
-┌──────────────────────┐
-│ Backend Spring Boot  │
-│ Security + Business  │
-│ Logic + Integration  │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│      MariaDB         │
-│ Users / Rooms /      │
-│ Bookings / Payments  │
-└──────────────────────┘
-```
+<p align="center">
+  <img src="https://res.cloudinary.com/dcwauocnz/image/upload/v1779334212/ArchitectureDiagram_ouuggn.png" alt="Architecture Diagram" width="90%" />
+</p>
 
 Backend còn kết nối với các dịch vụ bên ngoài như **Google OAuth2**, **VNPay**, **MoMo**, **Cloudinary** và **SMTP Email Service** để hoàn thiện các nghiệp vụ cần thiết.
 
@@ -263,29 +239,11 @@ HotelLink/
 
 HotelLink đã được triển khai thử nghiệm lên **AWS EC2** để kiểm tra khả năng vận hành trên môi trường Internet. Quy trình triển khai bao gồm cấu hình biến môi trường, build ứng dụng, chạy database, kết nối backend với frontend và kiểm tra hoạt động của hệ thống sau khi deploy.
 
-Pipeline CI/CD được xây dựng bằng **GitHub Actions** với quy trình tổng quát:
+Pipeline CI/CD được xây dựng bằng **GitHub Actions** với mô hình triển khai tự động:
 
-```text
-Push code lên GitHub
-        │
-        ▼
-GitHub Actions chạy workflow
-        │
-        ▼
-Build backend và frontend
-        │
-        ▼
-Tạo Docker image
-        │
-        ▼
-Push image lên Docker Hub
-        │
-        ▼
-SSH vào AWS EC2
-        │
-        ▼
-Pull image mới và chạy lại container
-```
+<p align="center">
+  <img src="https://res.cloudinary.com/dcwauocnz/image/upload/v1779334221/DeploymentDiagram_jtchle.png" alt="Deployment & CI/CD Diagram" width="90%" />
+</p>
 
 Hiện tại server EC2 không được duy trì online liên tục để tránh phát sinh chi phí. Phần deploy được thực hiện với mục đích học tập, demo, kiểm chứng khả năng vận hành thực tế và tích lũy kinh nghiệm DevOps cơ bản.
 
